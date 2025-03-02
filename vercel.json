@@ -1,0 +1,17 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "index.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      { "src": "/api/v1/user/.*", "dest": "/index.js" },
+      { "src": "/api/v1/job/.*", "dest": "/index.js" },
+      { "src": "/api/v1/careers/.*", "dest": "/index.js" },
+      { "src": "/api/v1/save/.*", "dest": "/index.js" },
+      { "src": "/test", "dest": "/index.js" }
+    ]
+  }
+  
