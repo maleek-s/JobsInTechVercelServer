@@ -27,7 +27,6 @@ app.use(cookieParser());
 
 const allowedOrigins = [
     'https://jobsintech.live',  // Your frontend
-    'https://job-portal-r.onrender.com',
     'http://localhost:5174'
   ];
 
