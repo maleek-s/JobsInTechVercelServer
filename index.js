@@ -1,6 +1,7 @@
 
 import cors from "cors";
 import express from "express";
+import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./utils/db.js";
 import userRoute from "./routes/user.route.js";
@@ -12,6 +13,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const app = express();
+dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 // Use `fileURLToPath` and `path.dirname` to get `__dirname`
@@ -27,7 +29,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
     'https://jobsintech.live',  // Your frontend
-    'http://localhost:5174'
+    'http://localhost:5173'
   ];
 
 const corsOptions = {
