@@ -1,6 +1,14 @@
 import { User } from "../models/user.model.js";
+import admin from "firebase-admin";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
+
+
+admin.initializeApp({
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)), // Load from environment variable
+  });
 
 export const register = async (req, res) => {
     try {
@@ -127,3 +135,44 @@ export const updateProfile = async (req, res) => {
         console.log(error);
     }
 }
+
+export const googleLogin = async (req, res) => {
+    try {
+        const { idToken } = req.body; // ✅ Get ID Token from frontend
+
+        if (!idToken) {
+            return res.status(400).json({ success: false, message: "Missing ID Token" });
+        }
+
+        // ✅ Verify token with Firebase Admin SDK
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const { email, name } = decodedToken;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = await User.create({
+                fullname: name,
+                email,
+                isGoogleUser: true, // ✅ Identify Google users
+            });
+        }
+
+        // ✅ Generate JWT for session management
+        const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none",
+        });
+
+        res.status(200).json({ success: true, user, token });
+
+    } catch (error) {
+        console.error("Google Login Error:", error);
+        res.status(500).json({ success: false, message: "Google login failed" });
+    }
+};
+
+  

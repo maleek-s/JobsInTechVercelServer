@@ -29,7 +29,8 @@ app.use(cookieParser());
 
 const allowedOrigins = [
     'https://jobsintech.live',  // Your frontend
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://127.0.0.1:5000'
   ];
 
 const corsOptions = {
