@@ -63,35 +63,49 @@ export const saveJob = async (req, res) => {
   }
 };
 
-export const getSavedJobs = async (req, res) => {
-    try {
+const getSavedJobs = async (req, res) => {
+  try {
       const userId = req.id;
-  
-      // Find the user and populate the appliedJobs array with job details
-      const user = await User.findById(userId).populate({
-        path: 'appliedJobs',  // Populate appliedJobs with the Job documents
-        options: { sort: { createdAt: -1 } } // Sort jobs by creation date
-      });
-  
-      if (!user || user.appliedJobs.length === 0) {
-        return res.status(404).json({
-          message: "No Applications",
-          success: false,
-        });
+
+      if (!userId) {
+          return res.status(401).json({
+              message: "User ID not found in request",
+              success: false,
+          });
       }
-  
-      return res.status(200).json({
-        applications: user.appliedJobs,  // Return the populated appliedJobs
-        success: true,
+
+      const user = await User.findById(userId).populate({
+          path: "appliedJobs",
+          options: { sort: { createdAt: -1 } },
       });
-    } catch (error) {
+
+      if (!user) {
+          return res.status(404).json({
+              message: "User not found",
+              success: false,
+          });
+      }
+
+      if (!user.appliedJobs.length) {
+          return res.status(404).json({
+              message: "No Applications",
+              success: false,
+          });
+      }
+
+      return res.status(200).json({
+          applications: user.appliedJobs,
+          success: true,
+      });
+  } catch (error) {
       console.log(error);
       return res.status(500).json({
-        message: "An error occurred.",
-        success: false,
+          message: "An error occurred.",
+          success: false,
       });
-    }
-  };
+  }
+};
+
   
 
   
