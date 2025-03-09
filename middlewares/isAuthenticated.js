@@ -1,8 +1,12 @@
-import jwt from "jsonwebtoken";
-
 const isAuthenticated = async (req, res, next) => {
     try {
-        const token = req.cookies.token;
+        let token = req.cookies.token;
+        
+        // Check for Authorization header if no cookie token is found
+        if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+            token = req.headers.authorization.split(" ")[1];
+        }
+
         if (!token) {
             return res.status(401).json({
                 message: "User not authenticated",
@@ -21,5 +25,3 @@ const isAuthenticated = async (req, res, next) => {
         });
     }
 };
-
-export default isAuthenticated;
