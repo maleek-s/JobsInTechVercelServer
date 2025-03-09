@@ -159,7 +159,7 @@ export const googleLogin = async (req, res) => {
         }
 
         // ✅ Generate JWT for session management
-        const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
 
         res.cookie("token", token, {
             httpOnly: true,
