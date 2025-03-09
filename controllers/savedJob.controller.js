@@ -63,7 +63,7 @@ export const saveJob = async (req, res) => {
   }
 };
 
-const getSavedJobs = async (req, res) => {
+export const getSavedJobs = async (req, res) => {
   try {
       const userId = req.id;
 
