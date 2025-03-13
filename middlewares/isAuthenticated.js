@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import admin from "firebase-admin";
 
 const isAuthenticated = async (req, res, next) => {
