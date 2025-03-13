@@ -138,15 +138,15 @@ export const updateProfile = async (req, res) => {
 
 export const googleLogin = async (req, res) => {
     try {
-        const { idToken } = req.body; // ✅ Get ID Token from frontend
+        const { idToken } = req.body;
 
         if (!idToken) {
             return res.status(400).json({ success: false, message: "Missing ID Token" });
         }
 
-        // ✅ Verify token with Firebase Admin SDK
+        // Verify token with Firebase Admin SDK
         const decodedToken = await admin.auth().verifyIdToken(idToken);
-        const { email, name } = decodedToken;
+        const { email, name, uid } = decodedToken; // ✅ Capture Firebase UID
 
         let user = await User.findOne({ email });
 
@@ -154,11 +154,16 @@ export const googleLogin = async (req, res) => {
             user = await User.create({
                 fullname: name,
                 email,
-                isGoogleUser: true, // ✅ Identify Google users
+                isGoogleUser: true,
+                firebaseUID: uid, // ✅ Store Firebase UID
             });
+        } else if (!user.firebaseUID) {
+            // ✅ Ensure existing Google users have a Firebase UID
+            user.firebaseUID = uid;
+            await user.save();
         }
 
-        // ✅ Generate JWT for session management
+        // Generate JWT
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
 
         res.cookie("token", token, {
@@ -174,5 +179,6 @@ export const googleLogin = async (req, res) => {
         res.status(500).json({ success: false, message: "Google login failed" });
     }
 };
+
 
   
