@@ -25,7 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const allowedOrigins = [
-    'https://jobsintech.live', // Your frontend
+    'https://jobsintech.live',
+    'https://server.jobsintech.live',
     'http://localhost:5173',
     'http://127.0.0.1:5000'
 ];
