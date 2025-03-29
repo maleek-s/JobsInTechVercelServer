@@ -1,14 +1,27 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const uri = "mongodb+srv://chizaa123:Jedandvatri123@cluster0.kzqe6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = "mongodb+srv://chizaa123:Jedandvatri123@cluster0.kzqe6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+let cached = global.mongoose || { conn: null, promise: null };
 
 async function connectDB() {
-  try {
-    await mongoose.connect(uri);
-    console.log("Connected to MongoDB with Mongoose!");
-  } catch (error) {
-    console.error("Failed to connect to MongoDB:", error);
-  }
+    if (cached.conn) {
+        return cached.conn;
+    }
+
+    if (!cached.promise) {
+        cached.promise = mongoose.connect(MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }).then((mongoose) => {
+            return mongoose;
+        });
+    }
+
+    cached.conn = await cached.promise;
+    return cached.conn;
 }
 
+global.mongoose = cached;
 export default connectDB;
+

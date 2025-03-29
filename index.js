@@ -20,8 +20,6 @@ const PORT = process.env.PORT || 3000;
 const __file = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__file); // Fix the typo here
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
-
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -56,12 +54,4 @@ app.use("/api/v1/careers", careersRoute);
 app.use("/api/v1/save", savedJobRoute);
 app.use('/', sitemapRouter);
 
-app.get("*", (req, res) =>
-  res.sendFile(path.join(__dirname, "/client/dist/index.html"))
-);
-
-// Start the server and connect to the database
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
+export default app;
