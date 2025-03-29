@@ -1,4 +1,5 @@
 import express from "express";
+import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./utils/db.js";
 import userRoute from "./routes/user.route.js";
@@ -8,7 +9,9 @@ import savedJobRoute from "./routes/savedJob.route.js";
 import sitemapRouter from "./routes/sitemap.route.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createServer } from "@vercel/node";
+import cors from "cors"; // Don't forget to import CORS as well!
+
+dotenv.config();
 
 const app = express();
 
@@ -22,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const allowedOrigins = [
-    'https://jobsintech.live',
+    'https://jobsintech.live', // Your frontend
     'http://localhost:5173',
     'http://127.0.0.1:5000'
 ];
@@ -39,7 +42,6 @@ const corsOptions = {
     credentials: true,
 };
 
-import cors from "cors";
 app.use(cors(corsOptions));
 
 // Connect to MongoDB
@@ -52,5 +54,5 @@ app.use("/api/v1/careers", careersRoute);
 app.use("/api/v1/save", savedJobRoute);
 app.use("/", sitemapRouter);
 
-// Vercel needs this export instead of `app.listen()`
-export default createServer(app);
+// Instead of `createServer()`, simply export the app
+export default app;
