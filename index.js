@@ -32,15 +32,9 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        console.log("Origin:", origin);
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
+    origin: allowedOrigins,
+    credentials: true, // ✅ Ensures cookies are sent
+    allowedHeaders: ["Content-Type", "Authorization"], // Ensure proper headers
 };
 
 app.use(cors(corsOptions));

@@ -81,7 +81,7 @@ export const login = async (req, res) => {
             profile: user.profile
         }
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'none', secure: true }).json({
+        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'none', secure: true }).json({
             message: `Welcome back ${user.fullname}`,
             user,
             success: true
@@ -129,6 +129,7 @@ export const updateProfile = async (req, res) => {
         return res.status(200).json({
             message:"Profile updated successfully.",
             user,
+            token,
             success:true
         })
     } catch (error) {
@@ -138,50 +139,66 @@ export const updateProfile = async (req, res) => {
 
 export const googleLogin = async (req, res) => { 
     try {
-      const { idToken } = req.body;
-  
-      if (!idToken) {
-        return res.status(400).json({ success: false, message: "Missing ID Token" });
-      }
-  
-      // Verify token with Firebase Admin SDK
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const { email, name, uid } = decodedToken; // Extract details from the decoded token
-  
-      // Check if user exists in the database
-      let user = await User.findOne({ email });
-  
-      if (!user) {
-        // Create a new user if not found
-        user = await User.create({
-          fullname: name,
-          email,
-          isGoogleUser: true,
-          firebaseUID: uid, // Store Firebase UID for future reference
+        const { idToken } = req.body;
+
+        if (!idToken) {
+            return res.status(400).json({ success: false, message: "Missing ID Token" });
+        }
+
+        // Verify token with Firebase Admin SDK
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const { email, name, uid } = decodedToken;
+
+        // Check if user exists in the database
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = await User.create({
+                fullname: name,
+                email,
+                isGoogleUser: true,
+                firebaseUID: uid,
+                appliedJobs: []  // ✅ Initialize appliedJobs
+            });
+        } else if (!user.firebaseUID) {
+            user.firebaseUID = uid;
+            await user.save();
+        }
+
+        // Generate JWT
+        const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true, // Change to `true` in production
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000,
         });
-      } else if (!user.firebaseUID) {
-        // Ensure existing users have Firebase UID linked
-        user.firebaseUID = uid;
-        await user.save();
-      }
-  
-      // Generate a JWT token for the session
-      const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "7d" });
-  
-      // Set cookie with the JWT token
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-        sameSite: "none",
-      });
-  
-      res.status(200).json({ success: true, user, token });
+
+        res.status(200).json({ success: true, user, token });
     } catch (error) {
-      console.error("Google Login Error:", error);
-      res.status(500).json({ success: false, message: "Google login failed" });
+        console.error("Google Login Error:", error);
+        res.status(500).json({ success: false, message: "Google login failed" });
     }
-  };
-  
+};
 
 
-  
+  export const getMe = async (req, res) => {
+    try {
+        const token = req.cookies.token; // ✅ Get token from cookie
+        if (!token) {
+            return res.status(401).json({ success: false, message: "Not logged in" });
+        }
+
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const user = await User.findById(decoded.userId).select("-password");
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: "User not found" });
+        }
+
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        res.status(401).json({ success: false, message: "Invalid token" });
+    }
+};

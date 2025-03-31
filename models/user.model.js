@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema(
       required: function () {
         return !this.isGoogleUser;
       },
-    }, // ✅ Optional for Google users
+    }, 
+    firebaseUID: { type: String, unique: true },
     isGoogleUser: { type: Boolean, default: false },
     appliedJobs: [
       {
