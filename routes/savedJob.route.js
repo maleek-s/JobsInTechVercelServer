@@ -5,8 +5,8 @@ import { saveJob, getSavedJobs } from "../controllers/savedJob.controller.js";
  
 const router = express.Router();
 
-router.route("/post/:id").post(verifySecretKey, isAuthenticated, saveJob);
-router.route("/get").get(verifySecretKey, isAuthenticated, getSavedJobs); 
+router.route("/post/:id").post( isAuthenticated, saveJob);
+router.route("/get").get(isAuthenticated, getSavedJobs); 
 
 export default router;
 
