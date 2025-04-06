@@ -10,6 +10,7 @@ const careersSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    remote: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

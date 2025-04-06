@@ -1,6 +1,6 @@
 import { Careers } from "../models/careers.model.js";
+import { Job } from "../models/job.model.js"; // Jobs Model
 
-// admin post krega job
 export const postCareers = async (req, res) => {
     try {
         const { companyName, careersLink } = req.body;
@@ -60,3 +60,42 @@ export const getAllCareers = async (req, res) => {
         });
     }
 };
+
+export const getRemoteCompaniesWithActiveJobs = async (req, res) => {
+    try {
+      // Step 1: Fetch all companies with remote: true
+      const companies = await Careers.find({ remote: true });
+  
+      if (!companies.length) {
+        return res.status(404).json({
+          message: "No remote companies found.",
+          success: false,
+        });
+      }
+  
+      // Step 2: Fetch active jobs for each company
+      const companiesWithJobs = await Promise.all(
+        companies.map(async (company) => {
+          // Fetch active jobs for the current company
+          const jobs = await Job.find({ company: company.companyName, status: "active" });
+  
+          return {
+            companyName: company.companyName,
+            remote: company.remote,
+            jobs: jobs,
+          };
+        })
+      );
+  
+      return res.status(200).json({
+        success: true,
+        companies: companiesWithJobs,
+      });
+    } catch (error) {
+      console.error("Error fetching remote companies with active jobs:", error);
+      return res.status(500).json({
+        message: "An error occurred while fetching remote companies with active jobs.",
+        success: false,
+      });
+    }
+  };
