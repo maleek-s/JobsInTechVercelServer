@@ -1,3 +1,5 @@
+
+import cors from "cors";
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -9,29 +11,29 @@ import savedJobRoute from "./routes/savedJob.route.js";
 import sitemapRouter from "./routes/sitemap.route.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import cors from "cors"; // Don't forget to import CORS as well!
-
-dotenv.config();
 
 const app = express();
+dotenv.config();
+const PORT = process.env.PORT || 3000;
 
 // Use `fileURLToPath` and `path.dirname` to get `__dirname`
 const __file = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__file); 
+const __dirname = path.dirname(__file); // Fix the typo here
 
-// Middleware
+app.use(express.static(path.join(__dirname, "/client/dist")));
+
+// Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const allowedOrigins = [
-    'https://jobsintech.live',
-    'https://server.jobsintech.live',
+    'https://jobsintech.live',  // Your frontend
     'http://localhost:5173',
     'http://127.0.0.1:5000'
-];
+  ];
 
-const corsOptions = {
+  const corsOptions = {
     origin: (origin, callback) => {
         console.log("Origin:", origin);
         if (!origin || allowedOrigins.includes(origin)) {
@@ -41,20 +43,26 @@ const corsOptions = {
         }
     },
     credentials: true,  // ✅ Ensure credentials are allowed
-    allowedHeaders: ["Content-Type", "Authorization"], // ✅ Add necessary headers
 };
 
 app.use(cors(corsOptions));
 
-// Connect to MongoDB
+
+// Connect to MongoDB using Mongoose
 connectDB();
 
-// Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/careers", careersRoute);
 app.use("/api/v1/save", savedJobRoute);
-app.use("/", sitemapRouter);
+app.use('/', sitemapRouter);
 
-// Instead of `createServer()`, simply export the app
-export default app;
+app.get("*", (req, res) =>
+  res.sendFile(path.join(__dirname, "/client/dist/index.html"))
+);
+
+// Start the server and connect to the database
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
