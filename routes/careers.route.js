@@ -6,9 +6,9 @@ import {getAllCareers, postCareers, getRemoteCompaniesWithActiveJobs } from "../
 
 const router = express.Router();
 
-router.route("/get").get(verifySecretKey, checkOrigin, getAllCareers);
-router.route("/with-active-jobs").get(verifySecretKey, checkOrigin, getRemoteCompaniesWithActiveJobs);
-router.route("/post").post(verifySecretKey, postCareers);
+router.route("/get").get(checkOrigin, getAllCareers);
+router.route("/with-active-jobs").get(checkOrigin, getRemoteCompaniesWithActiveJobs);
+router.route("/post").post(postCareers);
 
 export default router;
 

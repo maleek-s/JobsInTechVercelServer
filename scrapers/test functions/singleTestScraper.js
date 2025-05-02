@@ -176,18 +176,12 @@ const shouldExcludeLink = (content) => {
   return excluded;
 };
 
-const processJobLinks = async (
-  companyName,
-  page,
-  jobLinks,
-  visitedJobLinks
-) => {
+const processJobLinks = async (companyName, page, jobLinks, visitedJobLinks) => {
   const currentJobLinks = [];
 
   for (const { href, keyword } of jobLinks) {
-    currentJobLinks.push(href); // Track current job links
+    currentJobLinks.push(href);
 
-    // Log the job links and keywords being processed
     console.log(`Processing job link: ${href}, keyword: ${keyword}`);
 
     if (visitedJobLinks.has(href)) {
@@ -195,23 +189,21 @@ const processJobLinks = async (
       continue;
     }
 
-    await sleep(3000); // Delay before extracting content
+    await sleep(3000);
 
     let content = await extractContent(page, href);
+    if (!content) content = keyword;
 
-    if (!content) {
-      content = keyword; // Use the keyword as the content
-    } else if (shouldExcludeLink(content)) {
+    if (shouldExcludeLink(content)) {
       continue;
-    } else if (content.length > 150) {
-      // Truncate content to 150 characters and append ellipsis
-      content = content.substring(0, 150) + "...";
     }
-    
-    // Call the new scraper function to get the job content
-    const scrapedContent = await jobContentScraper(href);
-    
-    // Map scraped content into formatted job content
+
+    // Get scraped content with fallback
+    let scrapedContent = await jobContentScraper(href);
+    if (!scrapedContent) {
+      scrapedContent = [{"Job Details": [content.substring(0, 150) + "..."]}];
+    }
+
     const formattedJobContent = scrapedContent.map((item) => {
       const [heading, content] = Object.entries(item)[0];
       return { heading, content };
@@ -219,7 +211,6 @@ const processJobLinks = async (
 
     const jobCategory = findJobCategory(keyword);
     
-    // Create the job data object
     const jobData = {
       title: keyword,
       description: content,
@@ -230,31 +221,25 @@ const processJobLinks = async (
     };
     
     try {
-      // Wait for the axios response before processing the next link
       await axios.post("http://localhost:8000/api/v1/job/post", jobData);
-      console.log("Job posted successfully:", jobData);
-    
-      // Mark the job link as visited only after successful posting
+      console.log("Job posted successfully");
       visitedJobLinks.add(href);
     } catch (error) {
-      console.error(
-        `Failed to post job data:\nTitle: ${jobData.title},\nDescription: ${jobData.description},\nCompany: ${jobData.company},\nJob Link: ${jobData.jobLink},\nJob Content: ${JSON.stringify(jobData.jobContent, null, 2)}\nError: ${error.message}`
-      );
-    }}
-    
+      console.error(`Failed to post job data: ${error.message}`);
+    }
+  }
 
-  // Deactivate jobs that are no longer present
+  // Deactivate old jobs
   try {
     await axios.post("http://localhost:8000/api/v1/job/deactivate", {
       company: companyName,
       currentJobLinks,
     });
   } catch (error) {
-    console.error(
-      `Failed to deactivate outdated jobs for ${companyName}: ${error.message}`
-    );
+    console.error(`Failed to deactivate jobs: ${error.message}`);
   }
 };
+
 const scrapeCompany = async (browser, company, visitedJobLinks) => {
   const { companyName, careersLink } = company;
   console.log(`Processing ${companyName} at ${careersLink}`);
@@ -338,8 +323,8 @@ const scrapeCompany = async (browser, company, visitedJobLinks) => {
 export const runJobScraperTextContent = async () => {
   try {
     const company = {
-      companyName: "MoP",
-      careersLink: "https://ministryofprogramming.com/en/careers#Open-Positions",
+      companyName: "Fluentu",
+      careersLink: "https://www.fluentu.com/learn/remote-jobs-at-fluentu-join-our-team/",
     };
     const browser = await puppeteer.launch();
     const visitedJobLinks = new Set();

@@ -273,6 +273,12 @@ export const jobCategories = {
     "ai specialist",
     "data ops engineer",
   ],
+  Teacher: [
+    "english teacher",
+    "french teacher",
+    "german teacher",
+    "spanish teacher"
+  ],
   Miscellaneous: [
     "safety specialist",
     "localization expert",

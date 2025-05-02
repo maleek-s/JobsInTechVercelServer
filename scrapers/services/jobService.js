@@ -13,12 +13,12 @@ const exclusionKeywords = [
   "contact customer solutions",
   "error",
   "cookie",
+  "linkedin",
 ];
 
-const shouldExcludeLink = (content) => {
-  return exclusionKeywords.some((keyword) =>
-    content.toLowerCase().includes(keyword)
-  );
+const shouldExcludeLink = (href, content) => {
+  const text = `${href} ${content}`.toLowerCase();
+  return exclusionKeywords.some((keyword) => text.includes(keyword));
 };
 
 // Function to find job category based on the keyword
@@ -26,13 +26,16 @@ const findJobCategory = (keyword) => {
   const lowerCaseKeyword = keyword.toLowerCase().trim();
 
   for (const category in jobCategories) {
-    if (jobCategories[category].some((jobTitle) => jobTitle.toLowerCase() === lowerCaseKeyword)) {
+    if (
+      jobCategories[category].some(
+        (jobTitle) => jobTitle.toLowerCase() === lowerCaseKeyword
+      )
+    ) {
       return category;
     }
   }
   return "Miscellaneous"; // Default if no category is found
 };
-
 
 export const processJobLinks = async (
   companyName,
@@ -59,7 +62,7 @@ export const processJobLinks = async (
     // If no content is found, use the matched keyword as content
     if (!content) {
       content = keyword; // Use the keyword as the content
-    } else if (shouldExcludeLink(content)) {
+    } else if (shouldExcludeLink(href, content)) {
       continue;
     } else if (content.length > 150) {
       // Truncate content to 150 characters and append ellipsis
@@ -87,7 +90,7 @@ export const processJobLinks = async (
     };
 
     try {
-      await axios.post("https://jobsintech.live/api/v1/job/post", jobData);
+      await axios.post("http://localhost:8000/api/v1/job/post", jobData);
       console.log("Job posted successfully:", jobData);
       visitedJobLinks.add(href); // Mark the job link as visited
     } catch (error) {
@@ -99,7 +102,7 @@ export const processJobLinks = async (
 
   // Deactivate jobs that are no longer present
   try {
-    await axios.post("https://jobsintech.live/api/v1/job/deactivate", {
+    await axios.post("http://localhost:8000/api/v1/job/deactivate", {
       company: companyName,
       currentJobLinks,
     });

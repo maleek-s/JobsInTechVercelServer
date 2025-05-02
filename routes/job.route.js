@@ -6,11 +6,11 @@ import {getAllJobs, getJobById, postJob, deactivateJobs, getJobByCategory, searc
 const router = express.Router();
 
 router.route("/post").post(postJob);
-router.route("/deactivate").post(deactivateJobs);
-router.route("/get").get(verifySecretKey, checkOrigin,getAllJobs);
-router.route("/get/:id").get(verifySecretKey, checkOrigin,getJobById);
+router.route("/deactivate").post(checkOrigin, deactivateJobs);
+router.route("/get").get(checkOrigin,getAllJobs);
+router.route("/get/:id").get(checkOrigin,getJobById);
 router.route("/categories/:category?").get(checkOrigin, getJobByCategory);
-router.route("/search").get(verifySecretKey, checkOrigin,searchJob);
+router.route("/search").get(checkOrigin,searchJob);
 
 export default router;
 

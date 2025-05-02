@@ -76,6 +76,7 @@ export const getSavedJobs = async (req, res) => {
 
       const user = await User.findById(userId).populate({
           path: "appliedJobs",
+          match: { status: "active" },
           options: { sort: { createdAt: -1 } },
       });
 

@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer";
-import { sleep } from "./helpers/sleep.js";
+import { sleep } from "./helpers/sleep.js"; 
 import { processJobLinks } from "./services/jobService.js";
 import { fetchCompanies } from "./services/companyService.js";
 import { extractJobLinks } from "./extractors/extractJobLinks.js";
