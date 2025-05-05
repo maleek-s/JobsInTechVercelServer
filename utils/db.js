@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
-
-const MONGO_URI = "mongodb+srv://chizaa123:Jedandvatri123@cluster0.kzqe6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+import dotenv from "dotenv";
+dotenv.config();
+ 
+const MONGO_URI = process.env.MONGO_URI;
 
 let cached = global.mongoose || { conn: null, promise: null };
 

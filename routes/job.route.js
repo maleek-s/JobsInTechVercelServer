@@ -6,7 +6,7 @@ import {getAllJobs, getJobById, postJob, deactivateJobs, getJobByCategory, searc
 const router = express.Router();
 
 router.route("/post").post(postJob);
-router.route("/deactivate").post(checkOrigin, deactivateJobs);
+router.route("/deactivate").post(deactivateJobs);
 router.route("/get").get(checkOrigin,getAllJobs);
 router.route("/get/:id").get(checkOrigin,getJobById);
 router.route("/categories/:category?").get(checkOrigin, getJobByCategory);
